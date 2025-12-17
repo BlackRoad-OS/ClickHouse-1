@@ -547,6 +547,8 @@ void TCPHandler::runImpl()
                 continue;
 
             chassert(query_state);
+            LOG_DEBUG(log, "Going to process query with ID {}", query_state->query_id);
+
 
             if (connectionLimitReached())
             {
@@ -785,6 +787,7 @@ void TCPHandler::runImpl()
             }
             else if (query_state->io.pipeline.pulling())
             {
+                LOG_DEBUG(log, "In query_state->io.pipeline.pulling(), Call processOrdinaryQuery()");
                 processOrdinaryQuery(*query_state);
                 query_state->io.onFinish();
             }
@@ -811,6 +814,7 @@ void TCPHandler::runImpl()
                 /// without breaking protocol compatibility, but it can be done
                 /// by increasing revision.
                 sendProgress(*query_state);
+                LOG_DEBUG(log, "query_state->io.pipeline.completed(), Call sendSelectProfileEvents()");
                 sendSelectProfileEvents(*query_state);
             }
             else
@@ -823,6 +827,7 @@ void TCPHandler::runImpl()
                     create_query && create_query->isCreateQueryWithImmediateInsertSelect())
                 {
                     sendProgress(*query_state);
+                    LOG_DEBUG(log, "query_state->io.onFinish(), Call sendSelectProfileEvents()");
                     sendSelectProfileEvents(*query_state);
                 }
             }
@@ -1391,6 +1396,7 @@ void TCPHandler::processOrdinaryQuery(QueryState & state)
                         /// Some time passed and there is a progress.
                         after_send_progress.restart();
                         sendProgress(state);
+                        LOG_DEBUG(log, "In processOrdinaryQuery, Call sendSelectProfileEvents()");
                         sendSelectProfileEvents(state);
                     }
 
@@ -1426,6 +1432,8 @@ void TCPHandler::processOrdinaryQuery(QueryState & state)
         sendProfileInfo(state, executor.getProfileInfo());
         sendProgress(state);
         sendLogs(state);
+        LOG_DEBUG(log, "In processOrdinaryQuery in the end, Call sendSelectProfileEvents()");
+
         sendSelectProfileEvents(state);
 
         sendData(state, {});

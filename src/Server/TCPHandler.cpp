@@ -764,6 +764,7 @@ void TCPHandler::runImpl()
                         return true;
 
                     sendProgress(*query_state);
+                    LOG_DEBUG(log, "in setInteractiveCancelCallback, Call sendSelectProfileEvents()");
                     sendSelectProfileEvents(*query_state);
                     sendLogs(*query_state);
                     return false;
@@ -1432,7 +1433,7 @@ void TCPHandler::processOrdinaryQuery(QueryState & state)
         sendProfileInfo(state, executor.getProfileInfo());
         sendProgress(state);
         sendLogs(state);
-        LOG_DEBUG(log, "In processOrdinaryQuery in the end, Call sendSelectProfileEvents()");
+        LOG_DEBUG(log, "In processOrdinaryQuery at the end, Call sendSelectProfileEvents()");
 
         sendSelectProfileEvents(state);
 
@@ -1606,7 +1607,6 @@ void TCPHandler::sendProfileEvents(QueryState & state)
 
     Stopwatch stopwatch;
     Block block = ProfileEvents::getProfileEvents(host_name, state.profile_queue, state.last_sent_snapshots);
-    LOG_DEBUG(log, "In processOrdinaryQuery, Call sendSelectProfileEvents()");
 
     if (block.rows() != 0)
     {

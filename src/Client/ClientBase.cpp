@@ -1611,7 +1611,7 @@ void ClientBase::onProfileEvents(Block & block)
             {
                 thread_times[host_name].peak_memory_usage = value;
                 auto logger = getLogger("ClientBase");
-                LOG_DEBUG(logger, "In ClientBase::onProfileEvents, Received peak memory usage value {}", value);
+                LOG_DEBUG(logger, "debug_marker In ClientBase::onProfileEvents, Received peak memory usage value {}", value);
             }
         }
         progress_indication.updateThreadEventData(thread_times);

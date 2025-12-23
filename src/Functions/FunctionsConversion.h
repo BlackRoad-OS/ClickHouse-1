@@ -2388,12 +2388,15 @@ struct ConvertImpl
 #if !defined(OS_DARWIN)
                         _Pragma("clang loop vectorize_width(4) interleave_count(2)")
 #endif
+                        _Pragma("clang diagnostic push")
+                        _Pragma("clang diagnostic ignored \"-Wpass-failed\"")
                         for (size_t j = 0; j < remaining; ++j)
                         {
                             double tmp = static_cast<double>(s[j]);
                             float f = static_cast<float>(tmp);
                             d[j] = BFloat16(f);
                         }
+                        _Pragma("clang diagnostic pop")
 
                         i += remaining - 1;
                     }
@@ -2407,11 +2410,14 @@ struct ConvertImpl
 #if !defined(OS_DARWIN)
                         _Pragma("clang loop vectorize_width(4) interleave_count(2)")
 #endif
+                        _Pragma("clang diagnostic push")
+                        _Pragma("clang diagnostic ignored \"-Wpass-failed\"")
                         for (size_t j = 0; j < remaining; ++j)
                         {
                             double tmp = static_cast<double>(s[j]);
                             d[j] = Float32(tmp);
                         }
+                        _Pragma("clang diagnostic pop")
 
                         i += remaining - 1;
                     }

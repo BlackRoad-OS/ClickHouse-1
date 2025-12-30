@@ -189,10 +189,10 @@ void WriteBufferFromAzureBlobStorage::preFinalize()
                     {
                         Azure::Storage::Blobs::UploadBlockBlobOptions options;
 
-                        if (write_settings.object_storage_write_if_none_match.empty())
+                        if (!write_settings.object_storage_write_if_none_match.empty())
                             options.AccessConditions.IfNoneMatch = Azure::ETag(write_settings.object_storage_write_if_none_match);
 
-                        if (write_settings.object_storage_write_if_match.empty())
+                        if (!write_settings.object_storage_write_if_match.empty())
                             options.AccessConditions.IfMatch = Azure::ETag(write_settings.object_storage_write_if_match);
 
                         block_blob_client.Upload(
@@ -207,6 +207,16 @@ void WriteBufferFromAzureBlobStorage::preFinalize()
             {
                 error_code = static_cast<Int32>(e.StatusCode);
                 error_message = e.Message;
+                if (blob_log)
+                    blob_log->addEvent(
+                        BlobStorageLogElement::EventType::Upload,
+                        /* bucket */ container_for_logging,
+                        /* remote_path */ blob_path,
+                        /* local_path */ {},
+                        /* data_size */ part_data.data_size,
+                        watch.elapsedMicroseconds(),
+                        error_code,
+                        error_message);
                 throw;
             }
             auto elapsed = watch.elapsedMicroseconds();
@@ -242,10 +252,10 @@ void WriteBufferFromAzureBlobStorage::preFinalize()
                     {
                         Azure::Storage::Blobs::UploadBlockBlobOptions options;
 
-                        if (write_settings.object_storage_write_if_none_match.empty())
+                        if (!write_settings.object_storage_write_if_none_match.empty())
                             options.AccessConditions.IfNoneMatch = Azure::ETag(write_settings.object_storage_write_if_none_match);
 
-                        if (write_settings.object_storage_write_if_match.empty())
+                        if (!write_settings.object_storage_write_if_match.empty())
                             options.AccessConditions.IfMatch = Azure::ETag(write_settings.object_storage_write_if_match);
 
                         block_blob_client.Upload(
@@ -254,12 +264,22 @@ void WriteBufferFromAzureBlobStorage::preFinalize()
                             azure_context.WithValue(PocoAzureHTTPClient::getSDKContextKeyForBufferRetry(), retry_attempt));
                     },
                     max_unexpected_write_error_retries,
-                    0);
+                    /* cost */0);
             }
             catch (const Azure::Core::RequestFailedException & e)
             {
                 error_code = static_cast<Int32>(e.StatusCode);
                 error_message = e.Message;
+                if (blob_log)
+                    blob_log->addEvent(
+                        BlobStorageLogElement::EventType::Upload,
+                        /* bucket */ container_for_logging,
+                        /* remote_path */ blob_path,
+                        /* local_path */ {},
+                        /* data_size */ 0,
+                        watch.elapsedMicroseconds(),
+                        error_code,
+                        error_message);
                 throw;
             }
             auto elapsed = watch.elapsedMicroseconds();
@@ -312,10 +332,10 @@ void WriteBufferFromAzureBlobStorage::finalizeImpl()
                 {
                     Azure::Storage::Blobs::CommitBlockListOptions options;
 
-                    if (write_settings.object_storage_write_if_none_match.empty())
+                    if (!write_settings.object_storage_write_if_none_match.empty())
                         options.AccessConditions.IfNoneMatch = Azure::ETag(write_settings.object_storage_write_if_none_match);
 
-                    if (write_settings.object_storage_write_if_match.empty())
+                    if (!write_settings.object_storage_write_if_match.empty())
                         options.AccessConditions.IfMatch = Azure::ETag(write_settings.object_storage_write_if_match);
 
 
@@ -330,6 +350,16 @@ void WriteBufferFromAzureBlobStorage::finalizeImpl()
         {
             error_code = static_cast<Int32>(e.StatusCode);
             error_message = e.Message;
+            if (blob_log)
+                blob_log->addEvent(
+                    BlobStorageLogElement::EventType::MultiPartUploadComplete,
+                    /* bucket */ container_for_logging,
+                    /* remote_path */ blob_path,
+                    /* local_path */ {},
+                    /* data_size */ 0,
+                    watch.elapsedMicroseconds(),
+                    error_code,
+                    error_message);
             throw;
         }
         auto elapsed = watch.elapsedMicroseconds();
@@ -504,6 +534,16 @@ void WriteBufferFromAzureBlobStorage::writePart(WriteBufferFromAzureBlobStorage:
         {
             error_code = static_cast<Int32>(e.StatusCode);
             error_message = e.Message;
+            if (blob_log)
+                blob_log->addEvent(
+                    BlobStorageLogElement::EventType::MultiPartUploadWrite,
+                    /* bucket */ container_for_logging,
+                    /* remote_path */ blob_path,
+                    /* local_path */ {},
+                    /* data_size */ data_size,
+                    watch.elapsedMicroseconds(),
+                    error_code,
+                    error_message);
             throw;
         }
         auto elapsed = watch.elapsedMicroseconds();
